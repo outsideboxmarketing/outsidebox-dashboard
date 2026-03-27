@@ -13,35 +13,49 @@ exports.handler = async (event) => {
   try {
     const body = JSON.parse(event.body);
 
-    // Nur wenn Anruf beendet
-    if (body.event !== 'call_ended') {
-      return { statusCode: 200, body: 'OK' };
+    // Normalisiere Event-Namen (Leerzeichen, Bindestriche → Unterstrich)
+    const eventName = (body.event || '').toLowerCase().replace(/[\s-]/g, '_');
+    console.log('Event original:', body.event);
+    console.log('Event normalisiert:', eventName);
+    console.log('Voller Body:', JSON.stringify(body, null, 2));
+
+    // Alle bekannten Retell Events akzeptieren
+    const validEvents = ['call_ended', 'call_analyzed', 'call_completed'];
+    if (!validEvents.includes(eventName)) {
+      console.log('Ignoriertes Event:', body.event);
+      return { statusCode: 200, body: 'Event ignoriert: ' + body.event };
     }
 
-    const call = body.data;
+    // Datenstruktur flexibel abfangen
+    const call = body.data || body.call || body;
     const analysis = call.call_analysis || {};
+    const custom = analysis.custom_analysis_data || {};
 
-    // Daten aus Retell extrahieren
+    console.log('Custom Analysis:', JSON.stringify(custom, null, 2));
+
     const eintrag = {
-      name:     analysis.custom_analysis_data?.name     || 'Unbekannt',
-      phone:    call.from_number                        || '',
-      anliegen: analysis.custom_analysis_data?.anliegen || 'Sonstiges',
-      notiz:    analysis.call_summary                   || '',
+      name:     custom.name     || 'Unbekannt',
+      phone:    call.from_number || '',
+      anliegen: custom.anliegen || 'Sonstiges',
+      notiz:    custom.notiz    || analysis.call_summary || '',
       status:   'Neu',
       datum:    new Date().toLocaleDateString('de-DE')
     };
 
+    console.log('Eintrag:', JSON.stringify(eintrag, null, 2));
+
     const { error } = await supabase.from('anrufer').insert([eintrag]);
 
     if (error) {
-      console.error('Supabase Fehler:', error);
-      return { statusCode: 500, body: 'Datenbankfehler' };
+      console.error('Supabase Fehler:', JSON.stringify(error, null, 2));
+      return { statusCode: 500, body: 'Datenbankfehler: ' + error.message };
     }
 
+    console.log('Erfolgreich gespeichert!');
     return { statusCode: 200, body: 'Anrufer gespeichert' };
 
   } catch (err) {
-    console.error('Webhook Fehler:', err);
-    return { statusCode: 500, body: 'Interner Fehler' };
+    console.error('Fehler:', err.message);
+    return { statusCode: 500, body: 'Interner Fehler: ' + err.message };
   }
 };
