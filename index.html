@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OutsideBox Marketing – Anrufer Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7f6f3;
+      --surface: #ffffff;
+      --surface2: #f0efe9;
+      --border: rgba(0,0,0,0.1);
+      --border-strong: rgba(0,0,0,0.18);
+      --text: #1a1a18;
+      --text-muted: #7a7a74;
+      --accent: #1a1a18;
+      --radius: 10px;
+      --radius-lg: 14px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+    }
+
+    .page { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo-wrap {
+      width: 38px; height: 38px;
+      background: var(--text);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .brand-name { font-size: 15px; font-weight: 500; color: var(--text); }
+    .brand-sub { font-size: 11px; color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; margin-top: 1px; }
+    .header-date { font-size: 12px; color: var(--text-muted); }
+
+    /* Metrics */
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+    .metric {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+    }
+    .metric-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .metric-value { font-size: 26px; font-weight: 500; color: var(--text); }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex; gap: 8px; margin-bottom: 1rem;
+      align-items: center; flex-wrap: wrap;
+    }
+    .toolbar input {
+      flex: 1; min-width: 180px;
+      font-family: inherit; font-size: 13px;
+      padding: 7px 11px;
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+    }
+    .toolbar input:focus { border-color: var(--text); }
+    .toolbar select {
+      font-family: inherit; font-size: 13px;
+      padding: 7px 11px;
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+    }
+    .btn {
+      font-family: inherit; font-size: 13px;
+      padding: 7px 15px;
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: var(--surface2); }
+    .btn-primary {
+      background: var(--text);
+      color: #fff;
+      border-color: var(--text);
+    }
+    .btn-primary:hover { background: #333; }
+
+    /* Table */
+    .table-wrap {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 11px; font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: var(--surface2);
+      border-bottom: 0.5px solid var(--border);
+    }
+    th:nth-child(1) { width: 18%; }
+    th:nth-child(2) { width: 17%; }
+    th:nth-child(3) { width: 12%; }
+    th:nth-child(4) { width: 11%; }
+    th:nth-child(5) { width: 12%; }
+    th:nth-child(6) { width: 30%; }
+    tbody tr { border-bottom: 0.5px solid var(--border); transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+    tbody td { padding: 11px 14px; vertical-align: middle; }
+    td.no-clip { white-space: nowrap; }
+    td.clip { overflow: hidden; text-overflow: clip; white-space: nowrap; }
+
+    .name-cell { display: flex; align-items: center; gap: 9px; }
+    .avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: #e8e4f0;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 500; color: #534AB7;
+      flex-shrink: 0;
+    }
+
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 500;
+      padding: 3px 9px; border-radius: 99px;
+    }
+    .badge-neu       { background: #ddeeff; color: #0C447C; }
+    .badge-kontaktiert { background: #fff0d8; color: #633806; }
+    .badge-termin    { background: #dff2d8; color: #27500A; }
+    .badge-abgeschlossen { background: #e8e8e4; color: #2C2C2A; }
+
+    .anliegen-kaufen    { color: #185FA5; font-weight: 500; }
+    .anliegen-mieten    { color: #0F6E56; font-weight: 500; }
+    .anliegen-bewertung { color: #BA7517; font-weight: 500; }
+    .anliegen-sonstiges { color: #5F5E5A; font-weight: 500; }
+
+    .action-btn {
+      font-family: inherit; font-size: 12px;
+      padding: 4px 10px;
+      border: 0.5px solid var(--border-strong);
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+    .action-btn:hover { background: var(--surface2); color: var(--text); }
+    .action-btn + .action-btn { margin-left: 5px; }
+
+    .empty { text-align: center; padding: 2.5rem; color: var(--text-muted); font-size: 14px; }
+
+    /* Footer */
+    .footer { margin-top: 1.25rem; display: flex; justify-content: flex-end; }
+
+    /* Modal */
+    .modal-bg {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.25);
+      z-index: 100; align-items: center; justify-content: center;
+    }
+    .modal-bg.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      border: 0.5px solid var(--border);
+      padding: 1.75rem;
+      width: 100%; max-width: 420px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+    }
+    .modal h3 { font-size: 15px; font-weight: 500; margin-bottom: 1.25rem; }
+    .field { margin-bottom: 13px; }
+    .field label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px; }
+    .field input, .field select, .field textarea {
+      width: 100%; font-family: inherit; font-size: 14px;
+      padding: 8px 11px;
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--text); }
+    .field textarea { resize: vertical; min-height: 75px; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; }
+
+    @media (max-width: 700px) {
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+      th:nth-child(4), td:nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-wrap">
+        <svg width="20" height="20" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17 3 L31 29 L17 22 L3 29 Z" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round"/>
+          <line x1="17" y1="3" x2="17" y2="22" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">OutsideBox Marketing</div>
+        <div class="brand-sub">Anrufer Dashboard</div>
+      </div>
+    </div>
+    <div class="header-date" id="today-date"></div>
+  </div>
+
+  <div class="metrics" id="metrics"></div>
+
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Name oder Telefon suchen..." oninput="render()">
+    <select id="filter-anliegen" onchange="render()">
+      <option value="">Alle Anliegen</option>
+      <option value="Kaufen">Kaufen</option>
+      <option value="Mieten">Mieten</option>
+      <option value="Bewertung">Bewertung</option>
+      <option value="Sonstiges">Sonstiges</option>
+    </select>
+    <select id="filter-status" onchange="render()">
+      <option value="">Alle Status</option>
+      <option value="Neu">Neu</option>
+      <option value="Kontaktiert">Kontaktiert</option>
+      <option value="Termin">Termin</option>
+      <option value="Abgeschlossen">Abgeschlossen</option>
+    </select>
+    <button class="btn btn-primary" onclick="openModal()">+ Anrufer hinzufügen</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Telefon</th>
+          <th>Anliegen</th>
+          <th>Datum</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <button class="btn" onclick="downloadCSV()">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:6px;vertical-align:middle">
+        <path d="M8 2v8M5 7l3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Als CSV herunterladen
+    </button>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h3 id="modal-title">Neuer Anrufer</h3>
+    <div class="field"><label>Name</label><input id="f-name" type="text" placeholder="Max Mustermann"></div>
+    <div class="field"><label>Telefonnummer</label><input id="f-phone" type="tel" placeholder="+49711..."></div>
+    <div class="field"><label>Anliegen</label>
+      <select id="f-anliegen">
+        <option>Kaufen</option><option>Mieten</option><option>Bewertung</option><option>Sonstiges</option>
+      </select>
+    </div>
+    <div class="field"><label>Notiz</label>
+      <textarea id="f-notiz" placeholder="z.B. Sucht 3-Zimmer-Wohnung in Stuttgart-Mitte..."></textarea>
+    </div>
+    <div class="field"><label>Status</label>
+      <select id="f-status">
+        <option>Neu</option><option>Kontaktiert</option><option>Termin</option><option>Abgeschlossen</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveEntry()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('de-DE', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+  const SUPABASE_URL = 'https://fhoaqjtdahrhsngkiufl.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZob2FxanRkYWhyaHNuZ2tpdWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjY3ODksImV4cCI6MjA5MDEwMjc4OX0.6oBOuL9VX9pQRx_vBzLB46DyBkO16r2raPBhrJPPf-U';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let data = [];
+  let editId = null;
+
+  function initials(n) { return n.split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase(); }
+  function badgeClass(s) { return {Neu:'badge-neu',Kontaktiert:'badge-kontaktiert',Termin:'badge-termin',Abgeschlossen:'badge-abgeschlossen'}[s]||'badge-neu'; }
+  function anliegenClass(a) { return {Kaufen:'anliegen-kaufen',Mieten:'anliegen-mieten',Bewertung:'anliegen-bewertung',Sonstiges:'anliegen-sonstiges'}[a]||''; }
+
+  function showLoading() {
+    document.getElementById('tbody').innerHTML = '<tr><td colspan="6" class="empty">Daten werden geladen...</td></tr>';
+  }
+
+  async function loadData() {
+    showLoading();
+    const { data: rows, error } = await sb.from('anrufer').select('*').order('created_at', { ascending: false });
+    if (error) { console.error(error); document.getElementById('tbody').innerHTML = '<tr><td colspan="6" class="empty">Fehler beim Laden der Daten</td></tr>'; return; }
+    data = rows;
+    render();
+  }
+
+  function updateMetrics() {
+    let neu=0, termin=0, done=0;
+    data.forEach(d => { if(d.status==='Neu')neu++; if(d.status==='Termin')termin++; if(d.status==='Abgeschlossen')done++; });
+    document.getElementById('metrics').innerHTML = [
+      ['Gesamt Anrufer', data.length],
+      ['Neu', neu],
+      ['Termin vereinbart', termin],
+      ['Abgeschlossen', done]
+    ].map(([l,v]) => '<div class="metric"><div class="metric-label">'+l+'</div><div class="metric-value">'+v+'</div></div>').join('');
+  }
+
+  function render() {
+    const q = document.getElementById('search').value.toLowerCase();
+    const fa = document.getElementById('filter-anliegen').value;
+    const fs = document.getElementById('filter-status').value;
+    let f = data.filter(d => {
+      if (q && !d.name.toLowerCase().includes(q) && !d.phone.includes(q)) return false;
+      if (fa && d.anliegen !== fa) return false;
+      if (fs && d.status !== fs) return false;
+      return true;
+    });
+    if (!f.length) {
+      document.getElementById('tbody').innerHTML = '<tr><td colspan="6" class="empty">Keine Einträge gefunden</td></tr>';
+      updateMetrics(); return;
+    }
+    document.getElementById('tbody').innerHTML = f.map(d =>
+      '<tr>' +
+      '<td class="clip"><div class="name-cell"><div class="avatar">'+initials(d.name)+'</div>'+d.name+'</div></td>' +
+      '<td class="no-clip">'+d.phone+'</td>' +
+      '<td><span class="'+anliegenClass(d.anliegen)+'">'+d.anliegen+'</span></td>' +
+      '<td>'+d.datum+'</td>' +
+      '<td><span class="badge '+badgeClass(d.status)+'">'+d.status+'</span></td>' +
+      '<td class="no-clip">' +
+        '<button class="action-btn" onclick="editEntry('+d.id+')">Bearbeiten</button>' +
+        '<button class="action-btn" onclick="deleteEntry('+d.id+')">Löschen</button>' +
+      '</td>' +
+      '</tr>'
+    ).join('');
+    updateMetrics();
+  }
+
+  function openModal(id) {
+    editId = id || null;
+    document.getElementById('modal-title').textContent = id ? 'Anrufer bearbeiten' : 'Neuer Anrufer';
+    if (id) {
+      const d = data.find(x => x.id === id);
+      document.getElementById('f-name').value = d.name;
+      document.getElementById('f-phone').value = d.phone;
+      document.getElementById('f-anliegen').value = d.anliegen;
+      document.getElementById('f-notiz').value = d.notiz || '';
+      document.getElementById('f-status').value = d.status;
+    } else {
+      ['f-name','f-phone','f-notiz'].forEach(i => document.getElementById(i).value = '');
+      document.getElementById('f-anliegen').value = 'Kaufen';
+      document.getElementById('f-status').value = 'Neu';
+    }
+    document.getElementById('modal').classList.add('open');
+  }
+  function closeModal() { document.getElementById('modal').classList.remove('open'); }
+  function editEntry(id) { openModal(id); }
+
+  async function deleteEntry(id) {
+    if (!confirm('Eintrag wirklich löschen?')) return;
+    const { error } = await sb.from('anrufer').delete().eq('id', id);
+    if (error) { alert('Fehler beim Löschen'); return; }
+    await loadData();
+  }
+
+  async function saveEntry() {
+    const name = document.getElementById('f-name').value.trim();
+    const phone = document.getElementById('f-phone').value.trim();
+    if (!name || !phone) return;
+    const entry = {
+      name, phone,
+      anliegen: document.getElementById('f-anliegen').value,
+      notiz: document.getElementById('f-notiz').value,
+      status: document.getElementById('f-status').value,
+      datum: new Date().toLocaleDateString('de-DE')
+    };
+    if (editId) {
+      const { error } = await sb.from('anrufer').update(entry).eq('id', editId);
+      if (error) { alert('Fehler beim Speichern'); return; }
+    } else {
+      const { error } = await sb.from('anrufer').insert([entry]);
+      if (error) { alert('Fehler beim Speichern'); return; }
+    }
+    closeModal();
+    await loadData();
+  }
+
+  function downloadCSV() {
+    const headers = ['Name','Telefon','Anliegen','Datum','Status','Notiz'];
+    const rows = data.map(d => [d.name, d.phone, d.anliegen, d.datum, d.status, '"'+(d.notiz||'').replace(/"/g,'""')+'"']);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'anrufer_liste.csv'; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  document.getElementById('modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  loadData();
+</script>
+</body>
+</html>
